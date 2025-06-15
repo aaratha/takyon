@@ -1,0 +1,3 @@
+#+title: Takyon
+
+An implementation of Tidal Cycles / Studel in Rust
