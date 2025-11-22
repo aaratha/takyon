@@ -1,12 +1,33 @@
 #include "graph.h"
 
-#include <queue>
-
 int Graph::addNode(unique_ptr<Node> node) {
-  nodes.push_back(node);
-  parents.push_back(vector<int>());
-  children.push_back(vector<int>());
-  return nodes.size() - 1;
+  // check if any unallocated node slots exist
+  if (freeIDs.size() > 0) {
+    int id = freeIDs.front();
+    freeIDs.pop();
+    nodes[id] = std::move(node);
+    return id;
+  } else {
+
+    // allocate new slot if all are used
+    nodes.push_back(std::move(node));
+    parents.push_back(vector<int>());
+    children.push_back(vector<int>());
+    return nodes.size() - 1;
+  }
+}
+
+// TODO
+void Graph::removeNode(int id) {
+  nodes[id].reset();
+  freeIDs.push(id);
+
+  // iterate parents and remove this node ID
+  // clear parents vector
+  // iterate children and remove this node ID
+  // clear children vector
+
+  sort();
 }
 
 void Graph::addEdge(int parent, int child) {
@@ -45,3 +66,7 @@ void Graph::sort() {
 
   topoOrder = order;
 }
+
+vector<unique_ptr<Node>> &Graph::getNodes() { return nodes; }
+vector<int> &Graph::getTopoOrder() { return topoOrder; }
+vector<int> &Graph::getSinkedNodes() { return sinkedNodes; }

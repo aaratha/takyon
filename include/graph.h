@@ -1,8 +1,9 @@
 #pragma once
 
 #include <atomic>
-#include <vector>
 #include <functional>
+#include <queue>
+#include <vector>
 
 using namespace std;
 
@@ -20,7 +21,8 @@ struct Param {
 };
 
 class Graph {
-  vector < unique_ptr < Node >> nodes;
+  vector<unique_ptr<Node>> nodes;
+  queue<int> freeIDs;
   vector<vector<int>> parents;
   vector<vector<int>> children;
   vector<int> topoOrder; // cached
@@ -28,11 +30,17 @@ class Graph {
 
 public:
   Graph() = default;
-  ~Graph();
+  ~Graph() = default;
 
   int addNode(unique_ptr<Node> node);
+  void removeNode(int id);
+
   void addEdge(int parent, int child);
 
   void sort(); // pass to topoOrder
   void traverse(const function<void(Node *)> &func);
+
+  vector<unique_ptr<Node>> &getNodes();
+  vector<int> &getTopoOrder();
+  vector<int> &getSinkedNodes();
 };

@@ -1,5 +1,8 @@
-#include <iostream>
-
+#include "audio.h"
 #include "graph.h"
+#include "nodes.h"
 
-int main(int argc, char **argv) { std::cout << "hello world!" << std::endl; }
+int main(int argc, char **argv) {
+  Graph graph;
+  AudioManager am(graph);
+}
