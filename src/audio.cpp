@@ -3,7 +3,7 @@
 #include "globals.h"
 #include <atomic>
 
-AudioManager::AudioManager(Graph &graph)
+AudioEngine::AudioEngine(Graph &graph)
     : audioInitialized(false), nodes(graph.getNodes()),
       topoOrder(graph.getTopoOrder()), sinkedNodes(graph.getSinkedNodes()) {
 
@@ -14,7 +14,7 @@ AudioManager::AudioManager(Graph &graph)
   deviceConfig.playback.format = DEVICE_FORMAT;
   deviceConfig.playback.channels = DEVICE_CHANNELS;
   deviceConfig.sampleRate = DEVICE_SAMPLE_RATE;
-  deviceConfig.dataCallback = AudioManager::dataCallback;
+  deviceConfig.dataCallback = AudioEngine::dataCallback;
   deviceConfig.pUserData = this;
 
   if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) {
@@ -30,7 +30,7 @@ AudioManager::AudioManager(Graph &graph)
   running.store(true);
 }
 
-AudioManager::~AudioManager() {
+AudioEngine::~AudioEngine() {
   if (audioInitialized) {
     ma_device_uninit(&device);
     audioInitialized = false;
@@ -38,9 +38,9 @@ AudioManager::~AudioManager() {
   }
 }
 
-void AudioManager::dataCallback(ma_device *pDevice, void *pOutput,
-                                const void * /*pInput*/, ma_uint32 frameCount) {
-  auto *manager = static_cast<AudioManager *>(pDevice->pUserData);
+void AudioEngine::dataCallback(ma_device *pDevice, void *pOutput,
+                               const void * /*pInput*/, ma_uint32 frameCount) {
+  auto *manager = static_cast<AudioEngine *>(pDevice->pUserData);
   float *out = static_cast<float *>(pOutput);
 
   for (ma_uint32 i = 0; i < frameCount; i++) {

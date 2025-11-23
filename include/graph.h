@@ -8,11 +8,11 @@
 using namespace std;
 
 struct Node {
-  virtual ~Node() = default;
-  virtual void update() = 0;
-
   atomic<bool> sinked = false; // audioOut
   atomic<float> out{0.0f};
+
+  virtual ~Node() = default;
+  virtual void update() = 0;
 };
 
 struct Param {

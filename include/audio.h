@@ -6,7 +6,7 @@
 #include <atomic>
 #include <vector>
 
-class AudioManager {
+class AudioEngine {
   ma_device_config deviceConfig{};
   ma_device device{};
   std::atomic<bool> running{false};
@@ -20,6 +20,6 @@ class AudioManager {
                            const void * /*pInput*/, ma_uint32 frameCount);
 
 public:
-  AudioManager(Graph &graph);
-  ~AudioManager();
+  AudioEngine(Graph &graph);
+  ~AudioEngine();
 };
