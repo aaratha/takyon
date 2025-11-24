@@ -23,9 +23,22 @@ void Graph::removeNode(int id) {
   freeIDs.push(id);
 
   // iterate parents and remove this node ID
+  for (int pID : parents[id]) {
+    auto &sibs = children[pID];
+    sibs.erase(std::remove(sibs.begin(), sibs.end(), id), sibs.end());
+  }
+
   // clear parents vector
+  parents[id].clear();
+
   // iterate children and remove this node ID
+  for (int cID : children[id]) {
+    auto &sibs = parents[cID];
+    sibs.erase(std::remove(sibs.begin(), sibs.end(), id), sibs.end());
+  }
+
   // clear children vector
+  children[id].clear();
 
   sort();
 }

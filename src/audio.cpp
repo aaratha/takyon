@@ -43,17 +43,24 @@ void AudioEngine::dataCallback(ma_device *pDevice, void *pOutput,
   auto *manager = static_cast<AudioEngine *>(pDevice->pUserData);
   float *out = static_cast<float *>(pOutput);
 
-  for (ma_uint32 i = 0; i < frameCount; i++) {
-    for (int i : manager->topoOrder) {
-      if (!manager->nodes[i]->sinked.load(std::memory_order_relaxed))
+  for (ma_uint32 frame = 0; frame < frameCount; frame++) {
+    for (int nodeId : manager->topoOrder) {
+      if (nodeId < 0 || nodeId >= static_cast<int>(manager->nodes.size()))
         continue;
-      manager->nodes[i]->update();
+      auto *node = manager->nodes[nodeId].get();
+      if (!node)
+        continue;
+      node->update();
     }
 
-    // mix
     float sample = 0.0f;
-    for (int i : manager->sinkedNodes) {
-      sample += manager->nodes[i]->out.load(std::memory_order_relaxed);
+    for (int nodeId : manager->sinkedNodes) {
+      if (nodeId < 0 || nodeId >= static_cast<int>(manager->nodes.size()))
+        continue;
+      auto *node = manager->nodes[nodeId].get();
+      if (!node)
+        continue;
+      sample += node->out.load(std::memory_order_relaxed);
     }
 
     *out++ = sample;

@@ -38,6 +38,11 @@ add_library(miniaudio STATIC external/miniaudio/miniaudio.c)
 set_target_properties(miniaudio PROPERTIES LINKER_LANGUAGE C)
 target_include_directories(miniaudio PUBLIC external/miniaudio)
 
+# linenoise
+add_library(linenoise STATIC external/linenoise/linenoise.c)
+set_target_properties(linenoise PROPERTIES LINKER_LANGUAGE C)
+target_include_directories(linenoise PUBLIC external/linenoise)
+
 
 
 # -----------------------------
@@ -52,9 +57,10 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/external/miniaudio
+        ${PROGECT_SOURCE_DIR}/external/linenoise
 )
 
 # -----------------------------
 # Link libraries
 # -----------------------------
-target_link_libraries(${PROJECT_NAME} PRIVATE miniaudio lua)
+target_link_libraries(${PROJECT_NAME} PRIVATE miniaudio lua linenoise)

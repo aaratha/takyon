@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "linenoise.h"
+
 LuaEngine::LuaEngine(Graph &graph, AudioEngine &ae) : graph(graph), ae(ae) {
   L = luaL_newstate();
   luaL_openlibs(L);
@@ -83,13 +85,18 @@ void LuaEngine::stopWatcher() {
 }
 
 void LuaEngine::loop() {
-  std::string line;
+  char *line;
   while (true) {
-    std::cout << "-> ";
-    if (!std::getline(std::cin, line))
+    line = linenoise("-> ");
+    if (!line)
       break;
-    if (line == "exit")
-      break;
-    runString(line);
+
+    if (luaL_loadstring(L, line) || lua_pcall(L, 0, LUA_MULTRET, 0)) {
+      printf("Error: %s\n", lua_tostring(L, -1));
+      lua_pop(L, 1);
+    }
+
+    linenoiseHistoryAdd(line);
+    linenoiseFree(line);
   }
 }
