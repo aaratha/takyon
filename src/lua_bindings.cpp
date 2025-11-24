@@ -501,56 +501,17 @@ int lua_create_osc(lua_State *L) {
   auto *ctx = getCtx(L);
   Graph &graph = getGraphOrThrow(L, ctx);
 
-  float amp = 1.0f;
-  float freq = 440.0f;
-  Waveform type = toWaveform(L, 3);
+  // Create oscillator with default parameters first
+  auto node = Oscillator::init(1.0f, 440.0f, toWaveform(L, 3));
+  int id = graph.addNode(std::move(node));
+  auto *handle = pushNodeHandle(L, ctx, id, OSC_MT);
 
-  // Check if first argument is a control node
-  if (isControlHandle(L, 1)) {
-    // Create oscillator with default params
-    auto node = Oscillator::init(amp, freq, type);
-    int id = graph.addNode(std::move(node));
-    auto *handle = pushNodeHandle(L, ctx, id, OSC_MT);
+  auto *osc = getNodeAs<Oscillator>(L, graph, id, "oscillator");
 
-    // Attach the control node to amplitude parameter
-    auto *osc = getNodeAs<Oscillator>(L, graph, id, "oscillator");
-    attachControl(L, handle, id, osc->amp, 1);
+  // Set each parameter, handling both control nodes and numeric values
+  setScalarOrControl(L, handle, osc->amp, 1, true);  // amp (arg 1)
+  setScalarOrControl(L, handle, osc->freq, 2, true); // freq (arg 2)
 
-    // Check if frequency is also a control node
-    if (isControlHandle(L, 2)) {
-      attachControl(L, handle, id, osc->freq, 2);
-    } else if (!lua_isnoneornil(L, 2)) {
-      freq = static_cast<float>(luaL_optnumber(L, 2, 440.0));
-      osc->freq.store(freq, std::memory_order_relaxed);
-    }
-  }
-  // Check if second argument is a control node (for frequency)
-  else if (isControlHandle(L, 2)) {
-    // Create oscillator with default params
-    auto node = Oscillator::init(amp, freq, type);
-    int id = graph.addNode(std::move(node));
-    auto *handle = pushNodeHandle(L, ctx, id, OSC_MT);
-
-    // Set amplitude if provided
-    if (!lua_isnoneornil(L, 1)) {
-      amp = static_cast<float>(luaL_optnumber(L, 1, 1.0));
-      auto *temp_osc = getNodeAs<Oscillator>(L, graph, id, "oscillator");
-      temp_osc->amp.store(amp, std::memory_order_relaxed);
-    }
-
-    // Attach the control node to frequency parameter
-    auto *osc = getNodeAs<Oscillator>(L, graph, id, "oscillator");
-    attachControl(L, handle, id, osc->freq, 2);
-  }
-  else {
-    // Regular case: both arguments are numbers
-    amp = static_cast<float>(luaL_optnumber(L, 1, 1.0));
-    freq = static_cast<float>(luaL_optnumber(L, 2, 440.0));
-
-    auto node = Oscillator::init(amp, freq, type);
-    int id = graph.addNode(std::move(node));
-    pushNodeHandle(L, ctx, id, OSC_MT);
-  }
   return 1;
 }
 
@@ -558,25 +519,18 @@ int lua_create_lfo(lua_State *L) {
   auto *ctx = getCtx(L);
   Graph &graph = getGraphOrThrow(L, ctx);
 
-  float base = static_cast<float>(luaL_optnumber(L, 1, 0.0));
-  float amp = static_cast<float>(luaL_optnumber(L, 2, 1.0));
-  float freq = static_cast<float>(luaL_optnumber(L, 3, 5.0));
-
-  bool shiftIsControl = isControlHandle(L, 4);
-  float shift = shiftIsControl
-                    ? 0.0f
-                    : static_cast<float>(luaL_optnumber(L, 4, 0.0));
-
-  Waveform type = toWaveform(L, 5);
-
-  auto node = LFO::init(base, amp, freq, shift, type);
+  // Create LFO with default parameters first
+  auto node = LFO::init(0.0f, 1.0f, 5.0f, 0.0f, toWaveform(L, 5));
   int id = graph.addNode(std::move(node));
   auto *handle = pushNodeHandle(L, ctx, id, LFO_MT);
 
-  if (shiftIsControl) {
-    setScalarOrControl(L, handle,
-                       getNodeAs<LFO>(L, graph, id, "lfo")->shift, 4, true);
-  }
+  auto *lfo = getNodeAs<LFO>(L, graph, id, "lfo");
+
+  // Set each parameter, handling both control nodes and numeric values
+  setScalarOrControl(L, handle, lfo->base, 1, true);  // base (arg 1)
+  setScalarOrControl(L, handle, lfo->amp,  2, true);  // amp (arg 2)
+  setScalarOrControl(L, handle, lfo->freq, 3, true);  // freq (arg 3)
+  setScalarOrControl(L, handle, lfo->shift, 4, true); // shift (arg 4)
 
   return 1;
 }
@@ -585,34 +539,17 @@ int lua_create_filter(lua_State *L) {
   auto *ctx = getCtx(L);
   Graph &graph = getGraphOrThrow(L, ctx);
 
-  float cutoff = 1000.0f;
-  float q = 1.0f;
+  // Create filter with default parameters first
+  auto node = Filter::init(1000.0f, 1.0f);
+  int id = graph.addNode(std::move(node));
+  auto *handle = pushNodeHandle(L, ctx, id, FILTER_MT);
 
-  // Check if the first argument is a control node (LFO)
-  if (isControlHandle(L, 1)) {
-    // Create filter with default params first
-    auto node = Filter::init(cutoff, q);
-    int id = graph.addNode(std::move(node));
-    auto *handle = pushNodeHandle(L, ctx, id, FILTER_MT);
+  auto *filter = getNodeAs<Filter>(L, graph, id, "filter");
 
-    // Then attach the control node to the cutoff parameter
-    auto *filter = getNodeAs<Filter>(L, graph, id, "filter");
-    attachControl(L, handle, id, filter->cutoff, 1);
+  // Set each parameter, handling both control nodes and numeric values
+  setScalarOrControl(L, handle, filter->cutoff, 1, true);  // cutoff (arg 1)
+  setScalarOrControl(L, handle, filter->q, 2, true);       // q (arg 2)
 
-    // Set q parameter if provided as second argument
-    if (!lua_isnoneornil(L, 2)) {
-      q = static_cast<float>(luaL_optnumber(L, 2, 1.0));
-      filter->q.store(q, std::memory_order_relaxed);
-    }
-  } else {
-    // Regular case: both arguments are numbers
-    cutoff = static_cast<float>(luaL_optnumber(L, 1, 1000.0));
-    q = static_cast<float>(luaL_optnumber(L, 2, 1.0));
-
-    auto node = Filter::init(cutoff, q);
-    int id = graph.addNode(std::move(node));
-    pushNodeHandle(L, ctx, id, FILTER_MT);
-  }
   return 1;
 }
 
