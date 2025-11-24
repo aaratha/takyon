@@ -17,7 +17,6 @@ int Graph::addNode(unique_ptr<Node> node) {
   }
 }
 
-// TODO
 void Graph::removeNode(int id) {
   nodes[id].reset();
   freeIDs.push(id);

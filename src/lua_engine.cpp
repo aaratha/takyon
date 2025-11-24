@@ -55,11 +55,51 @@ void LuaEngine::runFile(const std::filesystem::path &path) {
   startWatcher(path);
 }
 
-// TODO
 void LuaEngine::reloadFile(const std::filesystem::path &path) {
-  // Two potential methods:
-  // 1. loop over lines/expressions and compare to saved state
-  // 2. create and overwrite objects with changes
+  // Store the audio engine reference
+  AudioEngine* ae_ptr = ctx.audio;
+
+  // Clear all nodes from the graph to destroy all audio objects
+  auto& nodes = graph.getNodes();
+  for (size_t i = 0; i < nodes.size(); i++) {
+    if (nodes[i]) {
+      graph.removeNode(i);
+    }
+  }
+
+  // Also clear the sinked nodes
+  graph.getSinkedNodes().clear();
+
+  // Clean up the current Lua state
+  lua_close(L);
+
+  // Create a fresh Lua state
+  L = luaL_newstate();
+  luaL_openlibs(L);
+
+  // Re-initialize the context (graph is already cleared)
+  ctx.graph = &graph;  // Use the same graph reference but now it's empty
+  ctx.audio = ae_ptr;
+  registerLuaBindings(L, &ctx);
+
+  // Load the runtime file
+  const std::filesystem::path runtimePath = "lua/runtime.lua";
+  if (std::filesystem::exists(runtimePath)) {
+    if (luaL_loadfile(L, runtimePath.c_str()) || lua_pcall(L, 0, 0, 0)) {
+      std::cerr << "Lua runtime error: " << lua_tostring(L, -1) << std::endl;
+      lua_pop(L, 1);
+    }
+  }
+
+  // Now load and run the target file
+  std::ifstream in(path);
+  if (in) {
+    std::cout << "--- reloading " << path << " ---\n";
+  }
+  if (luaL_loadfile(L, path.c_str()) || lua_pcall(L, 0, 0, 0)) {
+    std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
+    lua_pop(L, 1);
+  }
 }
 
 void LuaEngine::startWatcher(const std::filesystem::path &path) {

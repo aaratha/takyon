@@ -19,7 +19,8 @@ sound(O).freq(lfo(440, 220, 2).freq(L2)).amp(L3.shift(L4)).amp(L3.shift(L4)).amp
 -- .play()
 --
 
-LO = lfo(330, 110, 0.25)
+LL = lfo(100, 100, 0.1)
+LO = lfo(330, 110, LL)
 X = osc(0.1, LO, Saw)
 L = lfo(3000, 3000, 0.25)
 F1 = filter(L, 2) -- This should work - passing LFO as cutoff parameter
