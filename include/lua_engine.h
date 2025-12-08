@@ -3,6 +3,7 @@
 #include "audio.h"
 #include "graph.h"
 #include "lua_bindings.h"
+#include "pattern.h"
 
 #include <filesystem>
 #include <string>
@@ -17,6 +18,7 @@ extern "C" {
 class LuaEngine {
   Graph &graph;
   AudioEngine &ae;
+  PatternEngine &pe;
   lua_State *L;
   LuaContext ctx{};
 
@@ -24,7 +26,7 @@ class LuaEngine {
   std::atomic<bool> watchingFile{false};
 
 public:
-  LuaEngine(Graph &graph, AudioEngine &ae);
+  LuaEngine(Graph &graph, AudioEngine &ae, PatternEngine &pe);
   ~LuaEngine();
 
   void bindFunction(const std::string &name, lua_CFunction fn);

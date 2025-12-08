@@ -6,7 +6,8 @@
 
 #include "linenoise.h"
 
-LuaEngine::LuaEngine(Graph &graph, AudioEngine &ae) : graph(graph), ae(ae) {
+LuaEngine::LuaEngine(Graph &graph, AudioEngine &ae, PatternEngine &pe)
+    : graph(graph), ae(ae), pe(pe) {
   L = luaL_newstate();
   luaL_openlibs(L);
 
@@ -57,10 +58,10 @@ void LuaEngine::runFile(const std::filesystem::path &path) {
 
 void LuaEngine::reloadFile(const std::filesystem::path &path) {
   // Store the audio engine reference
-  AudioEngine* ae_ptr = ctx.audio;
+  AudioEngine *ae_ptr = ctx.audio;
 
   // Clear all nodes from the graph to destroy all audio objects
-  auto& nodes = graph.getNodes();
+  auto &nodes = graph.getNodes();
   for (size_t i = 0; i < nodes.size(); i++) {
     if (nodes[i]) {
       graph.removeNode(i);
@@ -78,7 +79,7 @@ void LuaEngine::reloadFile(const std::filesystem::path &path) {
   luaL_openlibs(L);
 
   // Re-initialize the context (graph is already cleared)
-  ctx.graph = &graph;  // Use the same graph reference but now it's empty
+  ctx.graph = &graph; // Use the same graph reference but now it's empty
   ctx.audio = ae_ptr;
   registerLuaBindings(L, &ctx);
 

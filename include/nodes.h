@@ -4,7 +4,7 @@
 
 #include "globals.h"
 
-using namespace std;
+namespace std {
 
 struct ControlNode : Node {
   vector<atomic<float> *> targets;
@@ -55,3 +55,5 @@ struct Filter : EffectNode {
 
   static unique_ptr<Filter> init(float cutoff_ = 500.0f, float q_ = 1.0f);
 };
+
+} // namespace std
