@@ -2,6 +2,10 @@
 
 Modular Synthesizer Live Coding Framework in Lua
 
+## Todo
+
+- Add SyncMode to node constructors
+
 ## Example
 
 ```lua

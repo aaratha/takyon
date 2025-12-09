@@ -7,9 +7,12 @@
 
 using namespace std;
 
+enum class SyncMode { PerVoice, Shared };
+
 struct Node {
   atomic<bool> sinked = false; // audioOut
   atomic<float> out{0.0f};
+  atomic<SyncMode> syncMode{SyncMode::PerVoice};
 
   virtual ~Node() = default;
   virtual void update() = 0;
