@@ -5,45 +5,43 @@
 #include <queue>
 #include <vector>
 
-using namespace std;
-
 enum class SyncMode { PerVoice, Shared };
 
 struct Node {
-  atomic<bool> sinked = false; // audioOut
-  atomic<float> out{0.0f};
-  atomic<SyncMode> syncMode{SyncMode::PerVoice};
+  std::atomic<bool> sinked = false; // audioOut
+  std::atomic<float> out{0.0f};
+  std::atomic<SyncMode> syncMode{SyncMode::PerVoice};
 
   virtual ~Node() = default;
   virtual void update() = 0;
 };
 
 struct Param {
-  atomic<float> *ptr;
+  std::atomic<float> *ptr;
   Node *owner;
 };
 
 class Graph {
-  vector<unique_ptr<Node>> nodes;
-  queue<int> freeIDs;
-  vector<vector<int>> parents;
-  vector<vector<int>> children;
-  vector<int> topoOrder; // cached
-  vector<int> sinkedNodes;
+  std::vector<std::unique_ptr<Node>> nodes;
+  std::queue<int> freeIDs;
+  std::vector<std::vector<int>> parents;
+  std::vector<std::vector<int>> children;
+  std::vector<int> topoOrder; // cached
+  std::vector<int> sinkedNodes;
 
 public:
   Graph() = default;
   ~Graph() = default;
 
-  int addNode(unique_ptr<Node> node);
+  int addNode(std::unique_ptr<Node> node);
   void removeNode(int id);
 
   void addEdge(int parent, int child);
 
   void sort(); // pass to topoOrder
-  void traverse(const function<void(Node *)> &func);
+  void traverse(const std::function<void(Node *)> &func);
 
-  vector<unique_ptr<Node>> &getNodes();
-  vector<int> &getTopoOrder();
-  vector<int> &getSinkedNodes();
+  std::vector<std::unique_ptr<Node>> &getNodes();
+  std::vector<int> &getTopoOrder();
+  std::vector<int> &getSinkedNodes();
 };

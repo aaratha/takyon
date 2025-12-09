@@ -2,12 +2,12 @@
 
 #include <iostream>
 
-void ControlNode::addTarget(atomic<float> *target) {
+void ControlNode::addTarget(std::atomic<float> *target) {
   if (target)
     targets.push_back(target);
 }
 
-void EffectNode::addInput(atomic<float> *input) {
+void EffectNode::addInput(std::atomic<float> *input) {
   if (input)
     inputs.push_back(input);
 }

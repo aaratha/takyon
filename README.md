@@ -5,6 +5,11 @@ Modular Synthesizer Live Coding Framework in Lua
 ## Todo
 
 - Add SyncMode to node constructors
+- Add VoiceTemplate versioning
+- Add .play() and .cue support
+  - Logic for sinking last audible node
+- ParamBinding for navigating voice parameters
+  - Should allow lua to interpret param edits and find the correct param
 
 ## Example
 

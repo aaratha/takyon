@@ -10,8 +10,6 @@
 
 enum class VoiceState { Active, Releasing, Inactive };
 
-enum class ParamType { Float, Bool, Waveform };
-
 enum class ParamKind {
   // Oscilator params
   OscFreq,
@@ -50,14 +48,13 @@ struct EdgeSpec {
 };
 
 struct ParamSpec {
-  ParamType type{ParamType::Float};
   ParamKind kind{ParamKind::OscFreq};
   int nodeIdx{-1}; // template-local index
   int paramId{-1}; // dense 0..N-1 per template
 };
 
 struct ParamBinding {
-  ParamType type;
+  ParamKind kind{ParamKind::OscFreq};
   union {
     std::atomic<float> *f;
     std::atomic<bool> *b;
@@ -127,8 +124,7 @@ public:
 
   int registerTemplate(std::unique_ptr<VoiceTemplate> voiceTemplate);
   std::vector<int> instantiateNodes(int templateId);
-  std::vector<ParamBinding> instantiateParams(int templateId,
-                                              const std::vector<int> &nodeIds);
+  std::vector<ParamBinding> instantiateParams(int templateId);
   int allocateVoice(int templateId);
   void freeVoice(int voiceId);
   void freeAllVoices();

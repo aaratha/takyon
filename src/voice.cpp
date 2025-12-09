@@ -68,11 +68,18 @@ std::vector<int> VoiceManager::instantiateNodes(int templateId) {
   return nodeIds;
 }
 
-std::vector<ParamBinding>
-VoiceManager::instantiateParams(int templateId,
-                                const std::vector<int> &nodeIds) {
+std::vector<ParamBinding> VoiceManager::instantiateParams(int templateId) {
+  // stores param kind for checking and pointer to relevant atomic
   std::vector<ParamBinding> bindings;
-  // logic
+
+  // IF param edit is within voice instance,  simply count nodes and
+  // look up param counts in table (e.g. osc = 3), adding them
+  // until reaching desired param id. perhaps do ParamKind : int
+  // then look up desired atomic in bindings table by count id
+  //
+  // IF param edit is for a node defined outside voice, simply
+  // look up the voice instances using that node and do the above
+
   return bindings;
 }
 
@@ -93,7 +100,7 @@ int VoiceManager::allocateVoice(int templateId) {
   std::vector<int> nodeIds = instantiateNodes(templateId);
 
   // create and store param bindings
-  std::vector<ParamBinding> bindings = instantiateParams(templateId, nodeIds);
+  std::vector<ParamBinding> bindings = instantiateParams(templateId);
 
   instance->setNodeIds(std::move(nodeIds));
   instance->setBindings(std::move(bindings));
@@ -108,7 +115,7 @@ void VoiceManager::freeVoice(int voiceId) {
 
   // Remove per voice nodes from graph (should sort per removal)
   VoiceInstance &instance = *voiceInstances[voiceId];
-  std::vector<unique_ptr<Node>> nodes = graph.getNodes();
+  std::vector<std::unique_ptr<Node>> &nodes = graph.getNodes();
 
   for (int nodeId : instance.getNodeIds()) {
     if (nodes[nodeId]->syncMode.load(std::memory_order_relaxed) ==

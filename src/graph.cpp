@@ -1,6 +1,6 @@
 #include "graph.h"
 
-int Graph::addNode(unique_ptr<Node> node) {
+int Graph::addNode(std::unique_ptr<Node> node) {
   // check if any unallocated node slots exist
   if (freeIDs.size() > 0) {
     int id = freeIDs.front();
@@ -11,8 +11,8 @@ int Graph::addNode(unique_ptr<Node> node) {
 
     // allocate new slot if all are used
     nodes.push_back(std::move(node));
-    parents.push_back(vector<int>());
-    children.push_back(vector<int>());
+    parents.push_back(std::vector<int>());
+    children.push_back(std::vector<int>());
     return nodes.size() - 1;
   }
 }
@@ -48,18 +48,18 @@ void Graph::addEdge(int parent, int child) {
 }
 
 void Graph::sort() {
-  unordered_map<int, int> inDegree;
+  std::unordered_map<int, int> inDegree;
   for (int i = 0; i < nodes.size(); i++) {
     inDegree[i] = parents[i].size();
   }
 
-  queue<int> q;
+  std::queue<int> q;
   for (auto &[node, deg] : inDegree) {
     if (deg == 0)
       q.push(node);
   }
 
-  vector<int> order;
+  std::vector<int> order;
   while (!q.empty()) {
     int node = q.front();
     q.pop();
@@ -79,6 +79,6 @@ void Graph::sort() {
   topoOrder = order;
 }
 
-vector<unique_ptr<Node>> &Graph::getNodes() { return nodes; }
-vector<int> &Graph::getTopoOrder() { return topoOrder; }
-vector<int> &Graph::getSinkedNodes() { return sinkedNodes; }
+std::vector<std::unique_ptr<Node>> &Graph::getNodes() { return nodes; }
+std::vector<int> &Graph::getTopoOrder() { return topoOrder; }
+std::vector<int> &Graph::getSinkedNodes() { return sinkedNodes; }
